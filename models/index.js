@@ -1,0 +1,1 @@
+exports.fetchTopics = require('../models/app.models').fetchTopics
