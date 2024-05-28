@@ -12,7 +12,6 @@ exports.fetchTopics = ()=>{
 };
 
 exports.fetchArticleById = (article_id) => {
-    console.log('Article ID in model:', article_id);
     return db
     .query(
         `SELECT articles.*, comments.article_id FROM articles 
@@ -21,18 +20,13 @@ exports.fetchArticleById = (article_id) => {
         GROUP BY articles.article_id, comments.article_id;`,
         [article_id]
     )
-    .then(({rows})=>{
-        console.log(rows[0])
-        if(!rows[0]){
+    .then(({ rows }) => {
+        if (!rows[0]) {
             return Promise.reject({
                 status: 404,
-                msg: `No article found for article_id ${article_id}`
+                msg: `404 - No article found for article_id ${article_id}`,
             });
         }
         return rows[0];
-    })
-    .catch((err)=>{
-        console.error('Error in fetchArticleById: ', err);
-        throw err;
-    })
+    });
 }

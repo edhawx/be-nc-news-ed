@@ -11,17 +11,17 @@ app.get("/api", getApi);
 app.get("/api/articles/:article_id", getArticleById);
 
 app.use((err, req, res, next) => {
-  if (err.status === 400) {
-    res.status(400).send({ msg: "400 - Bad request" });
-  } else if (err.code === "22P02" || err.code === "23502") {
-    res.status(400).send({ msg: "400 - Bad request " });
-  } else {
-    next(err);
-  }
+    if (err.status) {
+        res.status(err.status).send({ msg: err.msg });
+    } else if (err.code === "22P02" || err.code === "23502") {
+        res.status(400).send({ msg: "400 - Bad request" });
+    } else {
+        res.status(500).send({ msg: "500 - Internal Server Error" });
+    }
 });
 
 app.use((req, res, next) => {
-  res.status(404).send({ msg: "404 - Not found" });
+    res.status(404).send({ msg: "404 - Not found" });
 });
 
 module.exports = app;
