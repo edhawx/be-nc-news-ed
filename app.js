@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const pool = require("./db/connection");
-const { getTopics, getApi, getArticleById } = require("./controllers/app.controllers");
+const { getTopics, getApi, getArticleById, getArticles } = require("./controllers/app.controllers");
 const e = require("express");
 
 app.get("/api/topics", getTopics);
@@ -9,6 +9,8 @@ app.get("/api/topics", getTopics);
 app.get("/api", getApi);
 
 app.get("/api/articles/:article_id", getArticleById);
+
+app.get("/api/articles", getArticles)
 
 app.use((err, req, res, next) => {
     if (err.status) {
