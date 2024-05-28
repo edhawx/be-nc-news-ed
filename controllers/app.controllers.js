@@ -4,6 +4,7 @@ const {
   fetchTopics,
   fetchArticleById,
   fetchArticles,
+  fetchArticleCommentsById,
 } = require("../models/app.models");
 const path = require("path");
 const fs = require("fs");
@@ -70,3 +71,13 @@ exports.getArticles = (req, res, next) => {
     .catch(next);
     
 };
+
+exports.getArticleComments = (req,res,next)=>{
+    const { article_id } = req.params;
+    fetchArticleCommentsById(article_id).then((comments)=>{
+        res.status(200).send({comments})
+    })
+    .catch((err)=>{
+        next(err);
+    })
+}
