@@ -4,6 +4,8 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 // const testData = require("../db/data/test-data/topics")
 const testData = require("../db/data/test-data/index");
+const comments = require("../db/data/test-data/comments");
+const endpointsFile = require("../endpoints.json")
 require('jest-sorted')
 
 beforeEach(() => {
@@ -61,57 +63,7 @@ describe("GET /api", () => {
         expect(body.endpoints).toHaveProperty("GET /api/articles");
         expect(body.endpoints).toHaveProperty("GET /api/articles/:article_id");
 
-        const endpointShape = {
-          "GET /api": {
-            description:
-              "serves up a json representation of all the available endpoints of the api",
-          },
-          "GET /api/topics": {
-            description: "serves an array of all topics",
-            queries: [],
-            exampleResponse: {
-              topics: [{ slug: "football", description: "Footie!" }],
-            },
-          },
-          "GET /api/articles": {
-            description: "serves an array of all articles",
-            queries: ["author", "topic", "sort_by", "order"],
-            exampleResponse: {
-              articles: [
-                {
-                  title: "UNCOVERED: catspiracy to bring down democracy",
-                  topic: "cats",
-                  author: "rogersop",
-                  created_at: "2020-08-03T13:14:00.000Z",
-                  article_img_url:
-                    "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-                  votes: 0,
-                  article_id: 5,
-                  comment_count: 2,
-                },
-              ],
-            },
-          },
-          "GET /api/articles/:article_id": {
-            description: "fetches an object of inputted article_id",
-            queries: [],
-            exampleResponse: {
-              article: {
-                article_id: 1,
-                title: "Living in the shadow of a great man",
-                topic: "mitch",
-                author: "butter_bridge",
-                body: "I find this existence challenging",
-                created_at: "2020-07-09T20:11:00.000Z",
-                votes: 100,
-                article_img_url:
-                  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-              },
-            },
-          },
-        };
-
-        expect(body.endpoints).toMatchObject(endpointShape);
+        expect(body.endpoints).toMatchObject(endpointsFile);
       });
   });
 });
@@ -186,4 +138,44 @@ describe("GET /api/articles", () => {
         expect(body.msg).toBe("400 - Bad request");
       });
   });
+});
+
+describe("GET /api/articles/:article_id/comments", ()=>{
+    test("200: Responds with all comments for an article",()=>{
+        return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({body})=>{
+            expect(body.comments).toHaveLength(11);
+            body.comments.forEach((comment)=>{
+                expect(comment).toMatchObject({
+                    body: expect.any(String),
+                    comment_id: expect.any(Number),
+                    votes: expect.any(Number),
+                    created_at: expect.any(String),
+                    author: expect.any(String),
+                    article_id: expect.any(Number),
+                })
+            });
+            expect(body.comments).toBeSortedBy("created_at", {descending: true});
+        });
+    });
+
+    test("404: article ID not found",()=>{
+        return request(app)
+        .get("/api/articles/9999/comments")
+        .expect(404)
+        .then(({body})=>{
+            expect(body.msg).toBe("404 - No comments found for article ID of 9999")
+        })
+    })
+
+    test("400: bad request if banana entered!",()=>{
+        return request(app)
+        .get("/api/articles/banana/comments")
+        .expect(400)
+        .then(({body})=>{
+            expect(body.msg).toBe("400 - Bad request")
+        })
+    })
 });
