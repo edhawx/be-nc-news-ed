@@ -1,10 +1,12 @@
 const express = require("express");
 const app = express();
 const pool = require("./db/connection");
-const { getTopics } = require("./controllers/index");
+const { getTopics, getApi } = require("./controllers/app.controllers");
 const e = require("express");
 
 app.get("/api/topics", getTopics);
+
+app.get("/api", getApi);
 
 app.use((err, req, res, next)=>{
     if(err.status === 400){
