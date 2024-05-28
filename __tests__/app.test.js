@@ -37,4 +37,13 @@ describe("GET /api/topics", ()=>{
             expect(body.msg).toBe("404 - Not found");
           });
       });
+
+      test("GET:400 responds with 400 when given invalid params", ()=>{
+        return request(app)
+        .get("/api/topics?nonexistantParam=Nope")
+        .expect(400)
+        .then(({body})=>{
+            expect(body.msg).toBe("400 - Bad request")
+        })
+      })
 })
