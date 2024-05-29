@@ -248,7 +248,9 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then((res) => {
-        expect(res.body.msg).toBe(`400 - Bad request, invalid type: ${fakeArticleId}`);
+        expect(res.body.msg).toBe(
+          `400 - Bad request, invalid type: ${fakeArticleId}`
+        );
       });
   });
 
@@ -286,14 +288,16 @@ describe("POST /api/articles/:article_id/comments", () => {
 
   test("400: Responds with a 400 when there is no body", () => {
     const newComment = {
-      username: "rogersop"
+      username: "rogersop",
     };
     return request(app)
       .post(`/api/articles/1/comments`)
       .send(newComment)
       .expect(400)
       .then((res) => {
-        expect(res.body.msg).toBe("400 - Bad request, you haven't typed a comment!");
+        expect(res.body.msg).toBe(
+          "400 - Bad request, you haven't typed a comment!"
+        );
       });
   });
 
@@ -301,15 +305,118 @@ describe("POST /api/articles/:article_id/comments", () => {
     const newComment = {
       username: "rogersop",
       body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
-      additionalKey: "additionalValue"
+      additionalKey: "additionalValue",
     };
     return request(app)
       .post(`/api/articles/1/comments`)
       .send(newComment)
       .expect(400)
       .then((res) => {
-        expect(res.body.msg).toBe("400 - Bad request, enter a single username and comment");
+        expect(res.body.msg).toBe(
+          "400 - Bad request, enter a single username and comment"
+        );
+      });
+  });
+});
+
+describe("200: PATCH /api/articles/:article_id", () => {
+  test("200: Responds with 200 and updated votes by 1", () => {
+    const newVotes = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(newVotes)
+      .expect(200)
+      .then((res) => {
+        expect(res.body.article).toEqual(
+          expect.objectContaining({
+            title: "Living in the shadow of a great man",
+            article_id: 1,
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 101,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          })
+        );
       });
   });
 
+  test("200: Responds with 200 and updated votes by -101", () => {
+    const newVotes = {
+      inc_votes: -101,
+    };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(newVotes)
+      .expect(200)
+      .then((res) => {
+        expect(res.body.article).toEqual(
+          expect.objectContaining({
+            title: "Living in the shadow of a great man",
+            article_id: 1,
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: -1,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          })
+        );
+      });
+  });
+
+  test("404: Responds with 404 if article doesn't exist",()=>{
+    const newVotes = {
+      inc_votes: 1,
+    };
+    return request(app)
+    .patch("/api/articles/12345")
+    .send(newVotes)
+    .expect(404)
+    .then((res)=>{
+      expect(res.body.msg).toBe(`404 - No article found for article_id 12345`)
+    })
+  })
+
+  test("400: Responds with 400 if inc_vote is not a number",()=>{
+    const newVotes = {
+      inc_votes: "banana",
+    };
+    return request(app)
+    .patch("/api/articles/1")
+    .send(newVotes)
+    .expect(400)
+    .then((res)=>{
+      expect(res.body.msg).toBe(`400 - Bad request, inc_votes MUST be number`)
+    })
+  })
+
+  test("400: Responds with 400 if inc_vote is not a number",()=>{
+    const newVotes = {
+      inc_votes: {},
+    };
+    return request(app)
+    .patch("/api/articles/1")
+    .send(newVotes)
+    .expect(400)
+    .then((res)=>{
+      expect(res.body.msg).toBe(`400 - Bad request, inc_votes MUST be number`)
+    })
+  })
+
+  test("400: Responds with 400 if nothing entered",()=>{
+    const newVotes = {};
+    return request(app)
+    .patch("/api/articles/1")
+    .send(newVotes)
+    .expect(400)
+    .then((res)=>{
+      expect(res.body.msg).toBe(`400 - Bad request, must enter inc_votes: Number`)
+    })
+  })
 });

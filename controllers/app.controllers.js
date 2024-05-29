@@ -89,18 +89,23 @@ exports.postCommentToArticle = (req, res, next) => {
   if (Object.keys(newComment).length > 2) {
     return next({
       status: 400,
-      msg: '400 - Bad request, enter a single username and comment',
+      msg: "400 - Bad request, enter a single username and comment",
     });
   }
 
-
   const keys = Object.keys(newComment);
-  if(keys.length > 2 || new Set(keys).size !== keys.length){
-    return next({status: 400, msg: `400 - Bad request, enter a single username and comment`})
+  if (keys.length > 2 || new Set(keys).size !== keys.length) {
+    return next({
+      status: 400,
+      msg: `400 - Bad request, enter a single username and comment`,
+    });
   }
 
   if (isNaN(article_id)) {
-    return next({ status: 400, msg: `400 - Bad request, invalid type: ${article_id}` });
+    return next({
+      status: 400,
+      msg: `400 - Bad request, invalid type: ${article_id}`,
+    });
   }
 
   if (!body || body.trim().length === 0) {
@@ -126,6 +131,32 @@ exports.postCommentToArticle = (req, res, next) => {
     })
     .then((comment) => {
       res.status(201).send({ comment });
+    })
+    .catch(next);
+};
+
+exports.updateVotesInArticle = (req, res, next) => {
+  const { inc_votes } = req.body;
+  const { article_id } = req.params;
+
+  if(!inc_votes){
+    return next({status:400, msg:`400 - Bad request, must enter inc_votes: Number`})
+  }
+
+
+  if (typeof inc_votes !== "number") {
+    return next({
+      status: 400,
+      msg: `400 - Bad request, inc_votes MUST be number`
+    });
+  }
+
+    models.fetchArticleById(article_id)
+    .then(()=>{
+      return models.changeVoteAmount(article_id, inc_votes);
+    })
+    .then((updatedArticle) => {
+      res.status(200).send({ article: updatedArticle });
     })
     .catch(next);
 };
