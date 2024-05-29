@@ -319,7 +319,7 @@ describe("POST /api/articles/:article_id/comments", () => {
   });
 });
 
-describe("200: PATCH /api/articles/:article_id", () => {
+describe("PATCH /api/articles/:article_id", () => {
   test("200: Responds with 200 and updated votes by 1", () => {
     const newVotes = {
       inc_votes: 1,
@@ -420,3 +420,31 @@ describe("200: PATCH /api/articles/:article_id", () => {
     })
   })
 });
+
+describe("DELETE /api/comments/:comment_id",()=>{
+  test("204: Responds with 204 and deletes given comment on the comment_id and returns no content back",()=>{
+    return request(app)
+    .delete("/api/comments/1")
+    .expect(204)
+  })
+
+  test("404: Responds with 404 not found if comment with that ID doesn't exist before deletion",()=>{
+    return request(app)
+    .delete("/api/comments/99999")
+    .expect(404)
+    .then((res)=>{
+      expect(res.body.msg).toBe(`404 - Not found, that comment doesn't exist`)
+    })
+  })
+
+  test("400: Responds with 400 bad request if comment_id given is not an umber",()=>{
+    return request(app)
+    .delete("/api/comments/banana")
+    .expect(400)
+    .then((res)=>{
+      expect(res.body.msg).toBe(`400 - Bad request, comment_id must be a number`)
+    })
+  })
+
+  
+})

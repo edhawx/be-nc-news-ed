@@ -160,3 +160,23 @@ exports.updateVotesInArticle = (req, res, next) => {
     })
     .catch(next);
 };
+
+
+exports.deleteByCommentId = (req, res, next) => {
+  const { comment_id } = req.params;
+
+  if(isNaN(Number(comment_id))){
+    return next({status: 400, msg:"400 - Bad request, comment_id must be a number"})
+  }
+
+  const commentId = Number(comment_id)
+
+  models
+    .checkCommentExists(commentId)
+    .then(() => {
+      models.removeCommentById(commentId).then(() => {
+        res.status(204).send();
+      });
+    })
+    .catch(next);
+};
