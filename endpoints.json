@@ -58,6 +58,25 @@
         "created_at": "2024-05-29T10:12:21.520Z"
       }
     }
+  },
+
+  "PATCH /api/articles/:article_id": {
+    "description": "patches an article, by its article_id, and changes the number of votes on an article",
+    "queries": [],
+    "exampleResponse": {
+      "article":
+      {
+        "title": "Living in the shadow of a great man",
+        "article_id": 1,
+        "topic": "mitch",
+        "author": "butter_bridge",
+        "body": "I'm a comment on the article hello!",
+        "created_at": "2020-07-09T20:11:00.000Z",
+        "votes": -1,
+        "article_img_url":
+          "https://i-am-a-url"
+      }
+    }
   }
 
   
