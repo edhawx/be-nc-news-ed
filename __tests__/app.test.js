@@ -22,8 +22,8 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then(({ body }) => {
-        expect(body.topics).toHaveLength(3);
-        body.topics.forEach((topic) => {
+        expect(body).toHaveLength(3);
+        body.forEach((topic) => {
           expect(topic).toMatchObject({
             slug: expect.any(String),
             description: expect.any(String),
@@ -46,7 +46,7 @@ describe("GET /api/topics", () => {
       .get("/api/topics?nonexistantParam=Nope")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("400 - Bad request");
+        expect(body.msg).toBe("400 - Bad request, invalid topic parameters");
       });
   });
 });
@@ -308,22 +308,21 @@ describe("POST /api/articles/:article_id/comments", () => {
       additionalKey: "additionalValue",
     };
     return request(app)
-    .post("/api/articles/1/comments")
-    .send(newComment)
-    .expect(201)
-    .then((res) => {
-      expect(res.body.comment).toEqual(
-        expect.objectContaining({
-          comment_id: expect.any(Number),
-          body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
-          votes: 0,
-          author: "rogersop",
-          article_id: 1,
-          created_at: expect.any(String),
-        })
-      );
-    })
-      
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then((res) => {
+        expect(res.body.comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
+            votes: 0,
+            author: "rogersop",
+            article_id: 1,
+            created_at: expect.any(String),
+          })
+        );
+      });
   });
 });
 
@@ -378,81 +377,125 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 
-  test("404: Responds with 404 if article doesn't exist",()=>{
+  test("404: Responds with 404 if article doesn't exist", () => {
     const newVotes = {
       inc_votes: 1,
     };
     return request(app)
-    .patch("/api/articles/12345")
-    .send(newVotes)
-    .expect(404)
-    .then((res)=>{
-      expect(res.body.msg).toBe(`404 - No article found for article_id 12345`)
-    })
-  })
+      .patch("/api/articles/12345")
+      .send(newVotes)
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `404 - No article found for article_id 12345`
+        );
+      });
+  });
 
-  test("400: Responds with 400 if inc_vote is not a number",()=>{
+  test("400: Responds with 400 if inc_vote is not a number", () => {
     const newVotes = {
       inc_votes: "banana",
     };
     return request(app)
-    .patch("/api/articles/1")
-    .send(newVotes)
-    .expect(400)
-    .then((res)=>{
-      expect(res.body.msg).toBe(`400 - Bad request, inc_votes MUST be number`)
-    })
-  })
+      .patch("/api/articles/1")
+      .send(newVotes)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `400 - Bad request, inc_votes MUST be number`
+        );
+      });
+  });
 
-  test("400: Responds with 400 if inc_vote is not a number",()=>{
+  test("400: Responds with 400 if inc_vote is not a number", () => {
     const newVotes = {
       inc_votes: {},
     };
     return request(app)
-    .patch("/api/articles/1")
-    .send(newVotes)
-    .expect(400)
-    .then((res)=>{
-      expect(res.body.msg).toBe(`400 - Bad request, inc_votes MUST be number`)
-    })
-  })
+      .patch("/api/articles/1")
+      .send(newVotes)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `400 - Bad request, inc_votes MUST be number`
+        );
+      });
+  });
 
-  test("400: Responds with 400 if nothing entered",()=>{
+  test("400: Responds with 400 if nothing entered", () => {
     const newVotes = {};
     return request(app)
-    .patch("/api/articles/1")
-    .send(newVotes)
-    .expect(400)
-    .then((res)=>{
-      expect(res.body.msg).toBe(`400 - Bad request, must enter inc_votes: Number`)
-    })
-  })
+      .patch("/api/articles/1")
+      .send(newVotes)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `400 - Bad request, must enter inc_votes: Number`
+        );
+      });
+  });
 });
 
-describe("DELETE /api/comments/:comment_id",()=>{
-  test("204: Responds with 204 and deletes given comment on the comment_id and returns no content back",()=>{
-    return request(app)
-    .delete("/api/comments/1")
-    .expect(204)
-  })
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: Responds with 204 and deletes given comment on the comment_id and returns no content back", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
 
-  test("404: Responds with 404 not found if comment with that ID doesn't exist before deletion",()=>{
+  test("404: Responds with 404 not found if comment with that ID doesn't exist before deletion", () => {
     return request(app)
-    .delete("/api/comments/99999")
-    .expect(404)
-    .then((res)=>{
-      expect(res.body.msg).toBe(`404 - Not found, that comment doesn't exist`)
-    })
-  })
+      .delete("/api/comments/99999")
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `404 - Not found, that comment doesn't exist`
+        );
+      });
+  });
 
-  test("400: Responds with 400 bad request if comment_id given is not an umber",()=>{
+  test("400: Responds with 400 bad request if comment_id given is not an umber", () => {
     return request(app)
-    .delete("/api/comments/banana")
-    .expect(400)
-    .then((res)=>{
-      expect(res.body.msg).toBe(`400 - Bad request, comment_id must be a number`)
-    })
-  })
+      .delete("/api/comments/banana")
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `400 - Bad request, comment_id must be a number`
+        );
+      });
+  });
+});
 
-  
-})
+describe("GET /api/users", () => {
+  test("200: Will get all users", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveLength(4);
+        body.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+  });
+
+  test("GET:404 responds with 404 not found", () => {
+    return request(app)
+      .get("/api/endpoint-that-doesnt-exist")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("404 - Not found");
+      });
+  });
+
+  test("GET:400 responds with 400 when given invalid params", () => {
+    return request(app)
+      .get("/api/users?nonexistantParam=Nope")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("400 - Bad request, invalid user parameters");
+      });
+  });
+});
