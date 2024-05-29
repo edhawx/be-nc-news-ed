@@ -195,6 +195,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .then((res) => {
         expect(res.body.comment).toEqual(
           expect.objectContaining({
+            comment_id: expect.any(Number),
             body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
             votes: 0,
             author: "rogersop",
@@ -247,7 +248,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then((res) => {
-        expect(res.body.msg).toBe(`400 - Bad request, invalid type`);
+        expect(res.body.msg).toBe(`400 - Bad request, invalid type: ${fakeArticleId}`);
       });
   });
 
@@ -282,4 +283,33 @@ describe("POST /api/articles/:article_id/comments", () => {
         );
       });
   });
+
+  test("400: Responds with a 400 when there is no body", () => {
+    const newComment = {
+      username: "rogersop"
+    };
+    return request(app)
+      .post(`/api/articles/1/comments`)
+      .send(newComment)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe("400 - Bad request, you haven't typed a comment!");
+      });
+  });
+
+  test("400: Responds with a 400 when there are more than two key-value pairs", () => {
+    const newComment = {
+      username: "rogersop",
+      body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
+      additionalKey: "additionalValue"
+    };
+    return request(app)
+      .post(`/api/articles/1/comments`)
+      .send(newComment)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe("400 - Bad request, enter a single username and comment");
+      });
+  });
+
 });
