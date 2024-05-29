@@ -6,6 +6,7 @@ const {
   insertCommentToArticle,
   changeVoteAmount,
   removeCommentById,
+  fetchUsers,
 } = require("./app.models");
 
 const { checkUserExists, checkCommentExists } = require("./checker.models");
@@ -20,4 +21,5 @@ module.exports = {
   changeVoteAmount,
   removeCommentById,
   checkCommentExists,
+  fetchUsers,
 };

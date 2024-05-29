@@ -10,12 +10,14 @@ exports.getTopics = (req, res, next) => {
   const invalidParam = queryKeys.some((key) => !validParams.includes(key));
 
   if (invalidParam) {
-    res.status(400).send({ msg: "400 - Bad request" });
+    res
+      .status(400)
+      .send({ msg: "400 - Bad request, invalid topic parameters" });
   } else {
     models
       .fetchTopics()
       .then((topics) => {
-        res.status(200).send({ topics });
+        res.status(200).send(topics);
       })
       .catch((err) => {
         next(err);
@@ -124,20 +126,23 @@ exports.updateVotesInArticle = (req, res, next) => {
   const { inc_votes } = req.body;
   const { article_id } = req.params;
 
-  if(!inc_votes){
-    return next({status:400, msg:`400 - Bad request, must enter inc_votes: Number`})
+  if (!inc_votes) {
+    return next({
+      status: 400,
+      msg: `400 - Bad request, must enter inc_votes: Number`,
+    });
   }
-
 
   if (typeof inc_votes !== "number") {
     return next({
       status: 400,
-      msg: `400 - Bad request, inc_votes MUST be number`
+      msg: `400 - Bad request, inc_votes MUST be number`,
     });
   }
 
-    models.fetchArticleById(article_id)
-    .then(()=>{
+  models
+    .fetchArticleById(article_id)
+    .then(() => {
       return models.changeVoteAmount(article_id, inc_votes);
     })
     .then((updatedArticle) => {
@@ -146,15 +151,17 @@ exports.updateVotesInArticle = (req, res, next) => {
     .catch(next);
 };
 
-
 exports.deleteByCommentId = (req, res, next) => {
   const { comment_id } = req.params;
 
-  if(isNaN(Number(comment_id))){
-    return next({status: 400, msg:"400 - Bad request, comment_id must be a number"})
+  if (isNaN(Number(comment_id))) {
+    return next({
+      status: 400,
+      msg: "400 - Bad request, comment_id must be a number",
+    });
   }
 
-  const commentId = Number(comment_id)
+  const commentId = Number(comment_id);
 
   models
     .checkCommentExists(commentId)
@@ -164,4 +171,24 @@ exports.deleteByCommentId = (req, res, next) => {
       });
     })
     .catch(next);
+};
+
+exports.getUsers = (req, res, next) => {
+  const validParams = [];
+  const queryKeys = Object.keys(req.query);
+
+  const invalidParam = queryKeys.some((key) => !validParams.includes(key));
+
+  if (invalidParam) {
+    res.status(400).send({ msg: "400 - Bad request, invalid user parameters" });
+  } else {
+    models
+      .fetchUsers()
+      .then((users) => {
+        res.status(200).send(users);
+      })
+      .catch((err) => {
+        next(err);
+      });
+  }
 };
