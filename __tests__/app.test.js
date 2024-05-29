@@ -301,21 +301,29 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 
-  test("400: Responds with a 400 when there are more than two key-value pairs", () => {
+  test("201: Responds with a 201 when there are more than two key-value pairs, posts comment and ignores additional pair", () => {
     const newComment = {
       username: "rogersop",
       body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
       additionalKey: "additionalValue",
     };
     return request(app)
-      .post(`/api/articles/1/comments`)
-      .send(newComment)
-      .expect(400)
-      .then((res) => {
-        expect(res.body.msg).toBe(
-          "400 - Bad request, enter a single username and comment"
-        );
-      });
+    .post("/api/articles/1/comments")
+    .send(newComment)
+    .expect(201)
+    .then((res) => {
+      expect(res.body.comment).toEqual(
+        expect.objectContaining({
+          comment_id: expect.any(Number),
+          body: "AHHHHHHHH test banana grapefruit AHHHH!!!",
+          votes: 0,
+          author: "rogersop",
+          article_id: 1,
+          created_at: expect.any(String),
+        })
+      );
+    })
+      
   });
 });
 
