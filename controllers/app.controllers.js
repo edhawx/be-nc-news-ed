@@ -86,21 +86,6 @@ exports.postCommentToArticle = (req, res, next) => {
   const { username, body } = newComment;
   const { article_id } = req.params;
 
-  if (Object.keys(newComment).length > 2) {
-    return next({
-      status: 400,
-      msg: "400 - Bad request, enter a single username and comment",
-    });
-  }
-
-  const keys = Object.keys(newComment);
-  if (keys.length > 2 || new Set(keys).size !== keys.length) {
-    return next({
-      status: 400,
-      msg: `400 - Bad request, enter a single username and comment`,
-    });
-  }
-
   if (isNaN(article_id)) {
     return next({
       status: 400,
