@@ -77,6 +77,12 @@
           "https://i-am-a-url"
       }
     }
+  },
+
+  "DELETE api/comments/:comment_id": {
+    "description": "deletes a comment on its comment ID, has no response",
+    "queries": [],
+    "exampleResponse": {}
   }
 
   
