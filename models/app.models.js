@@ -28,6 +28,7 @@ exports.fetchArticleById = (article_id) => {
           msg: `404 - No article found for article_id ${article_id}`,
         });
       }
+
       return rows[0];
     });
 };
@@ -65,28 +66,46 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
 
   return db.query(sqlQuery).then((result) => {
     return result.rows;
-  })
+  });
 };
 
-exports.fetchArticleCommentsById = (article_id)=>{
-    return db
-    .query(`SELECT
+exports.fetchArticleCommentsById = (article_id) => {
+  return db
+    .query(
+      `SELECT
     comments.*,
     articles.article_id
     FROM comments
     LEFT JOIN articles ON comments.article_id = articles.article_id
     WHERE articles.article_id = $1
     ORDER BY created_at DESC;`,
-    [article_id]
+      [article_id]
     )
-    .then((result)=>{
-        if(result.rows.length === 0){
-            return Promise.reject({
-                status:404,
-                msg: `404 - No comments found for article ID of ${article_id}`,   
-            });
-        }
-        console.log(result.rows)
-        return (result.rows);
-    })
-}
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: `404 - No comments found for article ID of ${article_id}`,
+        });
+      }
+      return result.rows;
+    });
+};
+
+exports.insertCommentToArticle = ({
+  body,
+  author,
+  article_id,
+  votes,
+  created_at,
+}) => {
+  return db
+    .query(
+      `INSERT INTO comments (body, author, article_id, votes, created_at)
+    VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
+      [body, author, article_id, votes, created_at]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
