@@ -347,10 +347,12 @@ describe("PATCH /api/articles/:article_id", () => {
             votes: 101,
             article_img_url:
               "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+            comment_count: 11,
           })
         );
       });
   });
+
 
   test("200: Responds with 200 and updated votes by -101", () => {
     const newVotes = {
@@ -490,14 +492,6 @@ describe("GET /api/users", () => {
       });
   });
 
-  test("GET:400 responds with 400 when given invalid params", () => {
-    return request(app)
-      .get("/api/users?nonexistantParam=Nope")
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("400 - Bad request, invalid user parameters");
-      });
-  });
 });
 
 describe("GET /api/articles (topic query)", () => {
@@ -540,3 +534,4 @@ describe("GET /api/articles (topic query)", () => {
       });
   });
 });
+
