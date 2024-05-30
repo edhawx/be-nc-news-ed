@@ -126,6 +126,7 @@ exports.updateVotesInArticle = (req, res, next) => {
   const { inc_votes } = req.body;
   const { article_id } = req.params;
 
+
   if (!inc_votes) {
     return next({
       status: 400,
@@ -141,9 +142,9 @@ exports.updateVotesInArticle = (req, res, next) => {
   }
 
   models
-    .fetchArticleById(article_id)
+    .changeVoteAmount(article_id, inc_votes)
     .then(() => {
-      return models.changeVoteAmount(article_id, inc_votes);
+      return models.fetchArticleById(article_id); 
     })
     .then((updatedArticle) => {
       res.status(200).send({ article: updatedArticle });
