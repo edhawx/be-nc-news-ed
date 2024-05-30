@@ -17,7 +17,7 @@ exports.getTopics = (req, res, next) => {
     models
       .fetchTopics()
       .then((topics) => {
-        res.status(200).send({topics});
+        res.status(200).send({ topics });
       })
       .catch((err) => {
         next(err);
@@ -126,7 +126,6 @@ exports.updateVotesInArticle = (req, res, next) => {
   const { inc_votes } = req.body;
   const { article_id } = req.params;
 
-
   if (!inc_votes) {
     return next({
       status: 400,
@@ -144,7 +143,7 @@ exports.updateVotesInArticle = (req, res, next) => {
   models
     .changeVoteAmount(article_id, inc_votes)
     .then(() => {
-      return models.fetchArticleById(article_id); 
+      return models.fetchArticleById(article_id);
     })
     .then((updatedArticle) => {
       res.status(200).send({ article: updatedArticle });
@@ -186,7 +185,7 @@ exports.getUsers = (req, res, next) => {
     models
       .fetchUsers()
       .then((users) => {
-        res.status(200).send({users});
+        res.status(200).send({ users });
       })
       .catch((err) => {
         next(err);
