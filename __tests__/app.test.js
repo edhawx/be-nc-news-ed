@@ -527,12 +527,9 @@ describe("GET /api/articles (topic query)", () => {
       .get("/api/articles?topic=bananas")
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles).toEqual([])});
+        expect(body.articles).toEqual([]);
+      });
   });
-
-  
-
-
 
   test("GET:400 responds with 400 when given wrong query", () => {
     return request(app)
