@@ -70,10 +70,12 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
     queryValues.push(topic);
   }
 
-  sqlQuery += filterClauses.length
-    ? ` WHERE ${filterClauses.join(" AND ")}`
-    : "";
-  sqlQuery += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order};`;
+  if(filterClauses.length > 0){
+    sqlQuery += ` WHERE ${filterClauses.join(" AND ")}`;
+  }
+
+  sqlQuery += ` GROUP BY articles.article_id`;
+  sqlQuery += ` ORDER BY ${sort_by} ${order}`
 
   return db.query(sqlQuery, queryValues).then((result) => {
     return result.rows;
