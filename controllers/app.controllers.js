@@ -17,7 +17,7 @@ exports.getTopics = (req, res, next) => {
     models
       .fetchTopics()
       .then((topics) => {
-        res.status(200).send(topics);
+        res.status(200).send({topics});
       })
       .catch((err) => {
         next(err);
@@ -53,8 +53,8 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order } = req.query;
-  const validParams = ["sort_by", "order"];
+  const { sort_by, order, topic } = req.query;
+  const validParams = ["sort_by", "order", "topic"];
   const queryKeys = Object.keys(req.query);
   const invalidParams = queryKeys.some((key) => !validParams.includes(key));
 
@@ -63,7 +63,7 @@ exports.getArticles = (req, res, next) => {
   }
 
   models
-    .fetchArticles(sort_by, order)
+    .fetchArticles(sort_by, order, topic)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -185,7 +185,7 @@ exports.getUsers = (req, res, next) => {
     models
       .fetchUsers()
       .then((users) => {
-        res.status(200).send(users);
+        res.status(200).send({users});
       })
       .catch((err) => {
         next(err);

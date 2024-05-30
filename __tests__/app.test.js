@@ -22,8 +22,8 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then(({ body }) => {
-        expect(body).toHaveLength(3);
-        body.forEach((topic) => {
+        expect(body.topics).toHaveLength(3);
+        body.topics.forEach((topic) => {
           expect(topic).toMatchObject({
             slug: expect.any(String),
             description: expect.any(String),
@@ -470,8 +470,8 @@ describe("GET /api/users", () => {
       .get("/api/users")
       .expect(200)
       .then(({ body }) => {
-        expect(body).toHaveLength(4);
-        body.forEach((user) => {
+        expect(body.users).toHaveLength(4);
+        body.users.forEach((user) => {
           expect(user).toMatchObject({
             username: expect.any(String),
             name: expect.any(String),
@@ -496,6 +496,47 @@ describe("GET /api/users", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("400 - Bad request, invalid user parameters");
+      });
+  });
+});
+
+describe("GET /api/articles (topic query)", () => {
+  test("200: Responds with articles filtered by topic query", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBeGreaterThan(0);
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("cats");
+          expect(article).toMatchObject({
+            title: expect.any(String),
+            author: expect.any(String),
+            created_at: expect.any(String),
+            article_img_url: expect.any(String),
+            votes: expect.any(Number),
+            article_id: expect.any(Number),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+
+  test("200: Responds with 200 & empty array when topic doesn't exist", () => {
+    return request(app)
+      .get("/api/articles?topic=bananas")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toEqual([]);
+      });
+  });
+
+  test("GET:400 responds with 400 when given wrong query", () => {
+    return request(app)
+      .get("/api/articles?banana=cats")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("400 - Bad request, invalid parameters");
       });
   });
 });

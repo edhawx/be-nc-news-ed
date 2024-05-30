@@ -1,5 +1,6 @@
 const express = require("express");
 const db = require("../db/connection");
+const articles = require("../db/data/test-data/articles");
 
 exports.fetchTopics = () => {
   return db
@@ -33,7 +34,7 @@ exports.fetchArticleById = (article_id) => {
     });
 };
 
-exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
+exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   const validSortColumns = [
     "created_at",
     "votes",
@@ -50,7 +51,7 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
     return Promise.reject({ status: 400, msg: "400 - Bad request" });
   }
 
-  const sqlQuery = `SELECT 
+  let sqlQuery = `SELECT 
         articles.title, 
         articles.topic, 
         articles.author, 
@@ -60,11 +61,19 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
         articles.article_id,
         COUNT(comments.comment_id)::int AS comment_count
     FROM articles
-    LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
-    ORDER BY ${sort_by} ${order};`;
+    LEFT JOIN comments ON articles.article_id = comments.article_id`;
 
-  return db.query(sqlQuery).then((result) => {
+  if (topic) {
+    filterClauses.push(`articles.topic = $1`);
+    queryValues.push(topic);
+  }
+
+  sqlQuery += filterClauses.length
+    ? ` WHERE ${filterClauses.join(" AND ")}`
+    : "";
+  sqlQuery += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order};`;
+
+  return db.query(sqlQuery, queryValues).then((result) => {
     return result.rows;
   });
 };
