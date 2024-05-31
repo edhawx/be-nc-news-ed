@@ -23,7 +23,15 @@ const sortColumns = [
   "author",
 ];
 
+const invalidSortColumns = ["quiche"]
+
 const orders = ["ASC", "DESC"];
+
+const validLimit = ['limit']
+const validPage = ['p']
+
+const invalidLimit = ['banana']
+const invalidPage = ['pear']
 
 const invalidColumns = ["bob_the"];
 const invalidOrders = ["banana"];
@@ -32,6 +40,8 @@ const sqlInjectionInputs = [
   "1; SELECT * FROM users;",
   "DROP DATABASE IF EXISTS nc_news_test;",
 ];
+
+
 
 describe("GET /api/topics", () => {
   test("GET:200 sends array of all topics to client", () => {
@@ -233,7 +243,9 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("404 - Not found, user doesn't exist!");
+        expect(body.msg).toBe(
+          `404 - Not found, username: "jimbob" doesn't exist!`
+        );
       });
   });
 
@@ -671,3 +683,374 @@ describe("GET /api/articles (sorting queries)", () => {
     });
   });
 });
+
+const correctFormatFakeUsername = ["iwillneverexistever", "2", "bobbob"];
+const invalidFormatFakeUsername = ["$()*$£", "h ello", "%_Lhello"];
+
+describe("GET /api/users/:username", () => {
+  test("200: Responds with a user object with username, avatar_url and name by entering username", () => {
+    return request(app)
+      .get(`/api/users/butter_bridge`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.user).toMatchObject({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url:
+            "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        });
+      });
+  });
+
+  correctFormatFakeUsername.forEach((fakeUser) => {
+    test(`404: Responds with an error message saying that user "${encodeURIComponent(
+      fakeUser
+    )}" is not found`, () => {
+      return request(app)
+        .get(`/api/users/${fakeUser}`)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe(
+            `404 - Not found, username: "${encodeURIComponent(
+              fakeUser
+            )}" doesn't exist!`
+          );
+        });
+    });
+  });
+
+  invalidFormatFakeUsername.forEach((fakeInvalidFormatUser) => {
+    test(`400: Responds with an error message saying that username " ${fakeInvalidFormatUser}" is wrong format`, () => {
+      return request(app)
+        .get(`/api/users/${encodeURIComponent(fakeInvalidFormatUser)}`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe(
+            `400 - Bad request, this username is invalid format!`
+          );
+        });
+    });
+  });
+});
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: Responds with updated comment on given comment_id", () => {
+    const newVote = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch(`/api/comments/1`)
+      .send(newVote)
+      .expect(200)
+      .then((res) => {
+        expect(res.body.updatedComment).toEqual(
+          expect.objectContaining({
+            article_id: 9,
+            author: "butter_bridge",
+            body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+            comment_id: 1,
+            created_at: "2020-04-06T12:17:00.000Z",
+            votes: 17,
+          })
+        );
+      });
+  });
+
+  test("200: Responds with updated comment on given comment_id", () => {
+    const newVote = {
+      inc_votes: -17,
+    };
+    return request(app)
+      .patch(`/api/comments/1`)
+      .send(newVote)
+      .expect(200)
+      .then((res) => {
+        expect(res.body.updatedComment).toEqual(
+          expect.objectContaining({
+            article_id: 9,
+            author: "butter_bridge",
+            body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+            comment_id: 1,
+            created_at: "2020-04-06T12:17:00.000Z",
+            votes: -1,
+          })
+        );
+      });
+  });
+
+  test("404: Responds with comment doesn't exist if wrong id input", () => {
+    const newVote = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch(`/api/comments/999999`)
+      .send(newVote)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("404 - Not found, that comment doesn't exist");
+      });
+  });
+
+  test("400: Responds with bad request if wrong type", () => {
+    const newVote = {
+      inc_votes: "banana",
+    };
+    return request(app)
+      .patch(`/api/comments/1`)
+      .send(newVote)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("400 - Bad request, inc_votes MUST be a number");
+      });
+  });
+
+  test("400: Responds with bad request if nothing entered", () => {
+    const newVote = {};
+    return request(app)
+      .patch(`/api/comments/1`)
+      .send(newVote)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe(
+          "400 - Bad request, must enter inc_votes: number"
+        );
+      });
+  });
+});
+
+describe("POST /api/articles", () => {
+  test("201: posts a new article, responds with said article", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "199 AHHHHHh etc etc",
+      body: "loads of NUMBERS and apples",
+      topic: "cats",
+      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then((res) => {
+        expect(res.body.article).toEqual(
+          expect.objectContaining({
+            body: "loads of NUMBERS and apples",
+            title: "199 AHHHHHh etc etc",
+            topic: "cats",
+            votes: 0,
+            author: "rogersop",
+            article_id: 14,
+            created_at: expect.any(String),
+            article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+            comment_count: 0,
+          })
+        );
+      });
+  });
+
+  test("400: Responds with 400 when no BODY entered in article", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "199 AHHHHHh etc etc",
+      body: "",
+      topic: "cats",
+      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(newArticle)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          "400 - Bad request, you haven't typed an article!"
+        );
+      });
+  });
+
+  test("400: Responds with 400 when no AUTHOR entered in article", () => {
+    const newArticle = {
+      author: "",
+      title: "199 AHHHHHh etc etc",
+      body: "fdfdgfdhfggfj",
+      topic: "cats",
+      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(newArticle)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          "400 - Bad request, you haven't entered an author!"
+        );
+      });
+  });
+
+  test("400: Responds with 400 when no TITLE entered in article", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "",
+      body: "fdfdgfdhfggfj",
+      topic: "cats",
+      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(newArticle)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          "400 - Bad request, you haven't entered a title!"
+        );
+      });
+  });
+
+  test("400: Responds with 400 when no TOPIC entered in article", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "i am great",
+      body: "fdfdgfdhfggfj",
+      topic: "",
+      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(newArticle)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          "400 - Bad request, you haven't entered a topic!"
+        );
+      });
+  });
+
+  test("404: Responds with 404 when no USER is found with author name", () => {
+    const newArticle = {
+      author: "bobmcbob",
+      title: "i am great",
+      body: "fdfdgfdhfggfj",
+      topic: "i love topics",
+      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(newArticle)
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toBe(
+          `404 - Not found, username: "bobmcbob" doesn't exist!`
+        );
+      });
+  });
+});
+
+describe("GET /api/articles (pagination)",()=>{
+
+  test('200: responds with all articles when no limit or p are given', () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles.length).toBeGreaterThan(0);
+        expect(res.body).toHaveProperty('total_count');
+        res.body.articles.forEach(article => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+
+  test('200: responds with the number of articles defined by LIMIT and P (page) number', () => {
+    return request(app)
+      .get('/api/articles?limit=5&p=2')
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles).toHaveLength(5);
+        expect(res.body).toHaveProperty('total_count');
+        res.body.articles.forEach(article => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+
+  test('200: responds with the number of articles defined by LIMIT and P (page) number, sorted by topic in descending order', () => {
+    return request(app)
+      .get('/api/articles?sort_by=topic&order=DESC&limit=5&p=2')
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty('total_count', expect.any(Number));
+        expect(res.body.articles).toHaveLength(5);
+        res.body.articles.forEach(article => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+
+ 
+  invalidLimit.forEach((limit)=>{
+    invalidPage.forEach((page)=>{
+      test(`400: responds with a bad request if invalid limit and/or page given`, () => {
+        return request(app)
+          .get(`/api/articles?${limit}=5&${page}=1`)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe(
+              `400 - Bad request, invalid parameters`
+            );
+          });
+      });
+    })
+  })
+
+  invalidSortColumns.forEach((sort_by)=>{
+    invalidOrders.forEach((order)=>{
+      invalidLimit.forEach((limit)=>{
+        invalidPage.forEach((page)=>{
+          test(`400: responds with a bad request if all 4 queries are are invalid`,()=>{
+            return request(app)
+            .get(`/api/articles?${sort_by}=topic&order=${order}&${limit}=5&${page}=2`)
+            .expect(400)
+            .then(({body})=>{
+              expect(body.msg).toBe(
+                `400 - Bad request, invalid parameters`
+              )
+            })
+          })
+        })
+      })
+    })
+  })
+
+})

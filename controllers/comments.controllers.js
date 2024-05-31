@@ -62,3 +62,29 @@ exports.postCommentToArticle = (req, res, next) => {
       .catch(next);
   };
   
+  exports.patchCommentVotesByCommentId = (req,res,next) =>{
+    const { inc_votes } = req.body;
+    const { comment_id } = req.params;
+    if(!inc_votes){
+      return next({
+        status: 400,
+        msg: `400 - Bad request, must enter inc_votes: number`
+      })
+    }
+
+    if (typeof inc_votes !== "number"){
+      return next({
+        status: 400,
+        msg: `400 - Bad request, inc_votes MUST be a number`
+      });
+    }
+
+    models.changeCommentVoteAmount(comment_id, inc_votes)
+    .then(()=>{
+      return models.checkCommentExists(comment_id);
+    })
+    .then((updatedComment)=>{
+      res.status(200).send({ updatedComment })
+    })
+    .catch(next);
+  }

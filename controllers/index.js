@@ -4,9 +4,10 @@ const {
   getArticles,
   getArticleComments,
   updateVotesInArticle,
+  postNewArticle,
 } = require("./articles.controllers");
-const { deleteByCommentId, postCommentToArticle, } = require("./comments.controllers");
-const { getUsers } = require("./users.controllers");
+const { deleteByCommentId, postCommentToArticle, patchCommentVotesByCommentId } = require("./comments.controllers");
+const { getUsers, getUserByUsername } = require("./users.controllers");
 const { getApi } = require("./api.controllers");
 
 module.exports = {
@@ -16,7 +17,10 @@ module.exports = {
   getArticleComments,
   postCommentToArticle,
   updateVotesInArticle,
+  postNewArticle,
   deleteByCommentId,
+  patchCommentVotesByCommentId,
   getUsers,
+  getUserByUsername,
   getApi,
 };
