@@ -8,15 +8,8 @@ This portfolio project was created as part of a Digital Skills Bootcamp in Softw
 
 This API is to do with a project called Northcoders News. Within it, you will be able to query various endpoints to retrieve the data that you need.
 It was completed in week 7 of the Northcoders Software Development Bootcamp. Listed below are some general endpoints you'll find on the API.
+
 The project was written in JavaScript on VSCode on the week beginning May 27th 2024.
-
-Articles: articles on various different topics. 
-
-Topics: the various unique identifiers that can be used at the end of the URL.
-
-Users: all of the users currently in the database
-
-Comments: all of the comments and their authors (created by users)
 
 ---
 

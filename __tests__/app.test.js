@@ -2,9 +2,7 @@ const request = require("supertest");
 const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
-// const testData = require("../db/data/test-data/topics")
 const testData = require("../db/data/test-data/index");
-const comments = require("../db/data/test-data/comments");
 const endpointsFile = require("../endpoints.json");
 require("jest-sorted");
 
@@ -15,6 +13,25 @@ beforeEach(() => {
 afterAll(() => {
   return db.end();
 });
+
+const sortColumns = [
+  "created_at",
+  "votes",
+  "comment_count",
+  "title",
+  "topic",
+  "author",
+];
+
+const orders = ["ASC", "DESC"];
+
+const invalidColumns = ["bob_the"];
+const invalidOrders = ["banana"];
+
+const sqlInjectionInputs = [
+  "1; SELECT * FROM users;",
+  "DROP DATABASE IF EXISTS nc_news_test;",
+];
 
 describe("GET /api/topics", () => {
   test("GET:200 sends array of all topics to client", () => {
@@ -352,7 +369,6 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 
-
   test("200: Responds with 200 and updated votes by -101", () => {
     const newVotes = {
       inc_votes: -101,
@@ -490,7 +506,6 @@ describe("GET /api/users", () => {
         expect(body.msg).toBe("404 - Not found");
       });
   });
-
 });
 
 describe("GET /api/articles (topic query)", () => {
@@ -559,5 +574,100 @@ describe("PATCH /api/articles/:article_id with comment count", () => {
           })
         );
       });
+  });
+});
+
+describe("GET /api/articles (sorting queries)", () => {
+  test("200: gives 200 and responds with created_at but ascending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at&order=ASC")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toHaveLength(13);
+        body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            comment_count: expect.any(Number),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+          });
+          expect(body.articles).toBeSortedBy("created_at", {
+            ascending: true,
+          });
+        });
+      });
+  });
+
+  sortColumns.forEach((sort_by) => {
+    orders.forEach((order) => {
+      const isDescending = order === "DESC";
+      test("200: gives 200 and responds with every sort column both ascending and descending", () => {
+        return request(app)
+          .get(`/api/articles?sort_by=${sort_by}&order=${order}`)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.articles).toHaveLength(13);
+            body.articles.forEach((article) => {
+              expect(article).toMatchObject({
+                article_id: expect.any(Number),
+                title: expect.any(String),
+                topic: expect.any(String),
+                author: expect.any(String),
+                comment_count: expect.any(Number),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String),
+              });
+            });
+            expect(body.articles).toBeSortedBy(sort_by, {
+              descending: isDescending,
+              ascending: !isDescending,
+            });
+          });
+      });
+    });
+  });
+
+  invalidColumns.forEach((sort_by) => {
+    invalidOrders.forEach((order) => {
+      test("400: Responds with a bad request, invalid params if either or both are false", () => {
+        return request(app)
+          .get(`/api/articles?sort_by=${sort_by}&order=${order}`)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe(
+              "400 - Bad request, invalid sort_by and/or order"
+            );
+          });
+      });
+    });
+  });
+
+  sqlInjectionInputs.forEach((input) => {
+    test("400: Responds with a bad request for suspicious sql injection inputs", () => {
+      return request(app)
+        .get(`/api/articles?sort_by=${input}&order=ASC`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe(
+            "400 - Bad request, invalid sort_by and/or order"
+          );
+        });
+    });
+
+    test("400: Responds with a bad request for suspicious sql injection inputs", () => {
+      return request(app)
+        .get(`/api/articles?sort_by=created_at&order=${input}`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe(
+            "400 - Bad request, invalid sort_by and/or order"
+          );
+        });
+    });
   });
 });
