@@ -3,4 +3,3 @@ node_modules
 .env.development
 .env.test
 .env.production
-checkingdata.js
