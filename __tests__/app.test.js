@@ -23,15 +23,15 @@ const sortColumns = [
   "author",
 ];
 
-const invalidSortColumns = ["quiche"]
+const invalidSortColumns = ["quiche"];
 
 const orders = ["ASC", "DESC"];
 
-const validLimit = ['limit']
-const validPage = ['p']
+const validLimit = ["limit"];
+const validPage = ["p"];
 
-const invalidLimit = ['banana']
-const invalidPage = ['pear']
+const invalidLimit = ["banana"];
+const invalidPage = ["pear"];
 
 const invalidColumns = ["bob_the"];
 const invalidOrders = ["banana"];
@@ -40,8 +40,6 @@ const sqlInjectionInputs = [
   "1; SELECT * FROM users;",
   "DROP DATABASE IF EXISTS nc_news_test;",
 ];
-
-
 
 describe("GET /api/topics", () => {
   test("GET:200 sends array of all topics to client", () => {
@@ -825,7 +823,8 @@ describe("POST /api/articles", () => {
       title: "199 AHHHHHh etc etc",
       body: "loads of NUMBERS and apples",
       topic: "cats",
-      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+      article_img_url:
+        "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
     };
     return request(app)
       .post("/api/articles")
@@ -841,7 +840,8 @@ describe("POST /api/articles", () => {
             author: "rogersop",
             article_id: 14,
             created_at: expect.any(String),
-            article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+            article_img_url:
+              "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
             comment_count: 0,
           })
         );
@@ -854,7 +854,8 @@ describe("POST /api/articles", () => {
       title: "199 AHHHHHh etc etc",
       body: "",
       topic: "cats",
-      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+      article_img_url:
+        "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
     };
     return request(app)
       .post(`/api/articles`)
@@ -873,7 +874,8 @@ describe("POST /api/articles", () => {
       title: "199 AHHHHHh etc etc",
       body: "fdfdgfdhfggfj",
       topic: "cats",
-      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+      article_img_url:
+        "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
     };
     return request(app)
       .post(`/api/articles`)
@@ -892,7 +894,8 @@ describe("POST /api/articles", () => {
       title: "",
       body: "fdfdgfdhfggfj",
       topic: "cats",
-      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+      article_img_url:
+        "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
     };
     return request(app)
       .post(`/api/articles`)
@@ -911,7 +914,8 @@ describe("POST /api/articles", () => {
       title: "i am great",
       body: "fdfdgfdhfggfj",
       topic: "",
-      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+      article_img_url:
+        "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
     };
     return request(app)
       .post(`/api/articles`)
@@ -930,7 +934,8 @@ describe("POST /api/articles", () => {
       title: "i am great",
       body: "fdfdgfdhfggfj",
       topic: "i love topics",
-      article_img_url: "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
+      article_img_url:
+        "https://sallysbakingaddiction.com/wp-content/uploads/2019/04/quiche.jpg",
     };
     return request(app)
       .post(`/api/articles`)
@@ -944,16 +949,15 @@ describe("POST /api/articles", () => {
   });
 });
 
-describe("GET /api/articles (pagination)",()=>{
-
-  test('200: responds with all articles when no limit or p are given', () => {
+describe("GET /api/articles (pagination)", () => {
+  test("200: responds with all articles when no limit or p are given", () => {
     return request(app)
-      .get('/api/articles')
+      .get("/api/articles")
       .expect(200)
       .then((res) => {
         expect(res.body.articles.length).toBeGreaterThan(0);
-        expect(res.body).toHaveProperty('total_count');
-        res.body.articles.forEach(article => {
+        expect(res.body).toHaveProperty("total_count");
+        res.body.articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
               article_id: expect.any(Number),
@@ -970,14 +974,14 @@ describe("GET /api/articles (pagination)",()=>{
       });
   });
 
-  test('200: responds with the number of articles defined by LIMIT and P (page) number', () => {
+  test("200: responds with the number of articles defined by LIMIT and P (page) number", () => {
     return request(app)
-      .get('/api/articles?limit=5&p=2')
+      .get("/api/articles?limit=5&p=2")
       .expect(200)
       .then((res) => {
         expect(res.body.articles).toHaveLength(5);
-        expect(res.body).toHaveProperty('total_count');
-        res.body.articles.forEach(article => {
+        expect(res.body).toHaveProperty("total_count");
+        res.body.articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
               article_id: expect.any(Number),
@@ -994,14 +998,14 @@ describe("GET /api/articles (pagination)",()=>{
       });
   });
 
-  test('200: responds with the number of articles defined by LIMIT and P (page) number, sorted by topic in descending order', () => {
+  test("200: responds with the number of articles defined by LIMIT and P (page) number, sorted by topic in descending order", () => {
     return request(app)
-      .get('/api/articles?sort_by=topic&order=DESC&limit=5&p=2')
+      .get("/api/articles?sort_by=topic&order=DESC&limit=5&p=2")
       .expect(200)
       .then((res) => {
-        expect(res.body).toHaveProperty('total_count', expect.any(Number));
+        expect(res.body).toHaveProperty("total_count", expect.any(Number));
         expect(res.body.articles).toHaveLength(5);
-        res.body.articles.forEach(article => {
+        res.body.articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
               article_id: expect.any(Number),
@@ -1018,39 +1022,59 @@ describe("GET /api/articles (pagination)",()=>{
       });
   });
 
- 
-  invalidLimit.forEach((limit)=>{
-    invalidPage.forEach((page)=>{
+  invalidLimit.forEach((limit) => {
+    invalidPage.forEach((page) => {
       test(`400: responds with a bad request if invalid limit and/or page given`, () => {
         return request(app)
           .get(`/api/articles?${limit}=5&${page}=1`)
           .expect(400)
           .then(({ body }) => {
-            expect(body.msg).toBe(
-              `400 - Bad request, invalid parameters`
-            );
+            expect(body.msg).toBe(`400 - Bad request, invalid parameters`);
           });
       });
-    })
-  })
+    });
+  });
 
-  invalidSortColumns.forEach((sort_by)=>{
-    invalidOrders.forEach((order)=>{
-      invalidLimit.forEach((limit)=>{
-        invalidPage.forEach((page)=>{
-          test(`400: responds with a bad request if all 4 queries are are invalid`,()=>{
+  invalidSortColumns.forEach((sort_by) => {
+    invalidOrders.forEach((order) => {
+      invalidLimit.forEach((limit) => {
+        invalidPage.forEach((page) => {
+          test(`400: responds with a bad request if all 4 queries are are invalid`, () => {
             return request(app)
-            .get(`/api/articles?${sort_by}=topic&order=${order}&${limit}=5&${page}=2`)
-            .expect(400)
-            .then(({body})=>{
-              expect(body.msg).toBe(
-                `400 - Bad request, invalid parameters`
+              .get(
+                `/api/articles?${sort_by}=topic&order=${order}&${limit}=5&${page}=2`
               )
-            })
-          })
-        })
-      })
-    })
-  })
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).toBe(`400 - Bad request, invalid parameters`);
+              });
+          });
+        });
+      });
+    });
+  });
 
-})
+  sqlInjectionInputs.forEach((input) => {
+    test("400: Responds with a bad request for suspicious sql injection inputs", () => {
+      return request(app)
+        .get(`/api/articles?sort_by=topic&order=ASC&${input}=5&p=3`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe(
+            "400 - Bad request, invalid parameters"
+          );
+        });
+    });
+
+    test("400: Responds with a bad request for suspicious sql injection inputs", () => {
+      return request(app)
+        .get(`/api/articles?sort_by=created_at&order=ASC&limit=5&${input}=2`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe(
+            "400 - Bad request, invalid parameters"
+          );
+        });
+    });
+  });
+});
